@@ -2,6 +2,7 @@ package com.example.FIN_ecommerce_API.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
@@ -28,4 +29,10 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
+
+    private String resetOtp;
+
+    private LocalDateTime otpExpiration;
+
+    private String pendingPassword;
 }
