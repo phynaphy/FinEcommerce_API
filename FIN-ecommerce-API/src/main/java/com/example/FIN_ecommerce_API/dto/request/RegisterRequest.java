@@ -1,4 +1,4 @@
-package com.example.FIN_ecommerce_API.dto;
+package com.example.FIN_ecommerce_API.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

@@ -1,4 +1,4 @@
-package com.example.FIN_ecommerce_API.dto;
+package com.example.FIN_ecommerce_API.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
