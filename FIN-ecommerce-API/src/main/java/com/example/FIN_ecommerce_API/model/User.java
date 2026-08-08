@@ -1,5 +1,4 @@
 package com.example.FIN_ecommerce_API.model;
-
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -12,7 +11,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class User {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -31,8 +29,7 @@ public class User {
     private Role role;
 
     private String resetOtp;
-
     private LocalDateTime otpExpiration;
-
     private String pendingPassword;
+
 }

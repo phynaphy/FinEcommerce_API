@@ -1,5 +1,4 @@
 package com.example.FIN_ecommerce_API.service.serviceImpl;
-
 import com.example.FIN_ecommerce_API.dto.request.*;
 import com.example.FIN_ecommerce_API.dto.response.AuthResponse;
 import com.example.FIN_ecommerce_API.model.Role;
@@ -10,7 +9,6 @@ import com.example.FIN_ecommerce_API.service.AuthService;
 import com.example.FIN_ecommerce_API.service.EmailService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.Random;
 
