@@ -34,6 +34,10 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Error: Username is already taken!");
         }
 
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new RuntimeException("Error: Passwords do not match!");
+        }
+
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Error: Email is already in use!");
         }
@@ -41,6 +45,8 @@ public class AuthServiceImpl implements AuthService {
                 .username(request.getUsername())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .confirmPassword(passwordEncoder.encode(request.getConfirmPassword()))
+                .fullName(request.getFullName())
                 .role(Role.USER)
                 .build();
         userRepository.save(user);
