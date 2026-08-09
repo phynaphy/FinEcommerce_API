@@ -16,7 +16,7 @@ public interface AuthService {
     void resetForgotPassword(ResetForgotPasswordRequest request, String username);
 
     void requestChangePasswordOtp(RequestOtpRequest request);
-    void completeChangePassword(String email, CompleteResetPasswordRequest request);
+    void completeChangePassword(Long id, CompleteResetPasswordRequest request);
 
-    UserProfileResponse getUserProfile(String username);
+//    UserProfileResponse getUserProfile(String username);
 }

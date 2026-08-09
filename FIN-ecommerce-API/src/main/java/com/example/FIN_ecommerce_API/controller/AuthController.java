@@ -49,10 +49,10 @@ public class AuthController {
     //  Complete Change Password
     @PostMapping("/change-password/complete")
     public ResponseEntity<ApiResponse> completeChangePassword(
-            @RequestParam String email,
+            @RequestParam Long id,
             @RequestBody CompleteResetPasswordRequest request) {
 
-        authService.completeChangePassword(email, request);
+        authService.completeChangePassword(id, request);
         return ResponseEntity.ok(new ApiResponse("Password changed successfully."));
     }
 

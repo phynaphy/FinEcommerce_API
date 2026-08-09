@@ -1,8 +1,6 @@
 package com.example.FIN_ecommerce_API.service.serviceImpl;
-
 import com.example.FIN_ecommerce_API.dto.request.*;
 import com.example.FIN_ecommerce_API.dto.response.AuthResponse;
-import com.example.FIN_ecommerce_API.dto.response.UserProfileResponse;
 import com.example.FIN_ecommerce_API.model.Role;
 import com.example.FIN_ecommerce_API.model.User;
 import com.example.FIN_ecommerce_API.repository.UserRepository;
@@ -11,7 +9,6 @@ import com.example.FIN_ecommerce_API.service.AuthService;
 import com.example.FIN_ecommerce_API.service.EmailService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.Random;
 
@@ -100,7 +97,6 @@ public class AuthServiceImpl implements AuthService {
                 .build();
     }
 
-
     @Override
     public void resetForgotPassword(ResetForgotPasswordRequest request, String username) {
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
@@ -115,7 +111,6 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
     }
 
-
     @Override
     public void changePassword(ResetPasswordRequest request) {
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
@@ -123,7 +118,7 @@ public class AuthServiceImpl implements AuthService {
         }
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found with email"));
-        // Generate 6-digit OTP
+        // Generate 6 digit OTP
         String otp = String.format("%06d", new Random().nextInt(900000) + 100000);
         // Store OTP expiration and encoded pending password
         user.setResetOtp(otp);
@@ -134,22 +129,20 @@ public class AuthServiceImpl implements AuthService {
         emailService.sendOtpEmail(user.getEmail(), otp);
     }
 
-    //  Enter email -> Send OTP Code
+    //  Enter email Send OTP Code
     @Override
     public void requestChangePasswordOtp(RequestOtpRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + request.getEmail()));
-
         String otp = String.format("%06d", new Random().nextInt(900000) + 100000);
         user.setResetOtp(otp);
         user.setOtpExpiration(LocalDateTime.now().plusMinutes(10));
         user.setPendingPassword(null);
         userRepository.save(user);
-
         emailService.sendOtpEmail(user.getEmail(), otp);
     }
 
-    // Enter OTP code -> Verify OTP
+    // Enter OTP code  Verify OTP
     @Override
     public void verifyChangePasswordOtp(VerifyOtpRequest request) {
         User user = userRepository.findByResetOtp(request.getOtp())
@@ -164,16 +157,16 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
     }
 
-    // Current password + New password + Confirm password -> Update password
+    // Current password New password Confirm password Update password
     @Override
-    public void completeChangePassword(String email, CompleteResetPasswordRequest request) {
+    public void completeChangePassword(Long id, CompleteResetPasswordRequest request) {
         // Confirm new password matches confirm password
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
             throw new RuntimeException("New password and confirm password do not match");
         }
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
 
         // Enforce that Step 2 OTP verification passed
         if (!"OTP_VERIFIED".equals(user.getPendingPassword()) || user.getOtpExpiration() == null || user.getOtpExpiration().isBefore(LocalDateTime.now())) {
@@ -193,19 +186,6 @@ public class AuthServiceImpl implements AuthService {
         user.setOtpExpiration(null);
         user.setPendingPassword(null);
         userRepository.save(user);
-    }
-
-    @Override
-    public UserProfileResponse getUserProfile(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
-        return UserProfileResponse.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .fullName(user.getFullName())
-                .role(user.getRole().name())
-                .build();
     }
 
 }
