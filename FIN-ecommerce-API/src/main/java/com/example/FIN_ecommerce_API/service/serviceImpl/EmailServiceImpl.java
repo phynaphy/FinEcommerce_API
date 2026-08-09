@@ -1,7 +1,6 @@
 package com.example.FIN_ecommerce_API.service.serviceImpl;
 
 import com.example.FIN_ecommerce_API.service.EmailService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;

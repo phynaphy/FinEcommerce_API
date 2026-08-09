@@ -1,6 +1,8 @@
 package com.example.FIN_ecommerce_API.service.serviceImpl;
+
 import com.example.FIN_ecommerce_API.dto.request.*;
 import com.example.FIN_ecommerce_API.dto.response.AuthResponse;
+import com.example.FIN_ecommerce_API.dto.response.UserProfileResponse;
 import com.example.FIN_ecommerce_API.model.Role;
 import com.example.FIN_ecommerce_API.model.User;
 import com.example.FIN_ecommerce_API.repository.UserRepository;
@@ -9,6 +11,7 @@ import com.example.FIN_ecommerce_API.service.AuthService;
 import com.example.FIN_ecommerce_API.service.EmailService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDateTime;
 import java.util.Random;
 
@@ -83,7 +86,38 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void resetPassword(ResetPasswordRequest request) {
+    public AuthResponse verifyForgotPassword(VerifyOtpRequest request) {
+        User user = userRepository.findByResetOtp(request.getOtp())
+                .orElseThrow(() -> new RuntimeException("Invalid OTP code"));
+        if (user.getOtpExpiration() == null || user.getOtpExpiration().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("OTP code has expired");
+        }
+        String token = jwtProvider.generateToken(user.getUsername());
+        return AuthResponse.builder()
+                .token(token)
+                .username(user.getUsername())
+                .role(user.getRole().name())
+                .build();
+    }
+
+
+    @Override
+    public void resetForgotPassword(ResetForgotPasswordRequest request, String username) {
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new RuntimeException("New password and confirm password do not match");
+        }
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setResetOtp(null);
+        user.setOtpExpiration(null);
+        userRepository.save(user);
+    }
+
+
+    @Override
+    public void changePassword(ResetPasswordRequest request) {
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
             throw new RuntimeException("New password and confirm password do not match");
         }
@@ -100,21 +134,78 @@ public class AuthServiceImpl implements AuthService {
         emailService.sendOtpEmail(user.getEmail(), otp);
     }
 
+    //  Enter email -> Send OTP Code
     @Override
-    public void verifyOtp(VerifyOtpRequest request) {
+    public void requestChangePasswordOtp(RequestOtpRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + request.getEmail()));
+
+        String otp = String.format("%06d", new Random().nextInt(900000) + 100000);
+        user.setResetOtp(otp);
+        user.setOtpExpiration(LocalDateTime.now().plusMinutes(10));
+        user.setPendingPassword(null);
+        userRepository.save(user);
+
+        emailService.sendOtpEmail(user.getEmail(), otp);
+    }
+
+    // Enter OTP code -> Verify OTP
+    @Override
+    public void verifyChangePasswordOtp(VerifyOtpRequest request) {
         User user = userRepository.findByResetOtp(request.getOtp())
                 .orElseThrow(() -> new RuntimeException("Invalid OTP code"));
+
         if (user.getOtpExpiration() == null || user.getOtpExpiration().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("OTP code has expired");
         }
-        if (user.getPendingPassword() == null) {
-            throw new RuntimeException("No pending password change request found");
-        }
-        user.setPassword(user.getPendingPassword());
-        user.setPendingPassword(null);
-        user.setResetOtp(null);
-        user.setOtpExpiration(null);
 
+        // Flag user as verified in Step 2
+        user.setPendingPassword("OTP_VERIFIED");
         userRepository.save(user);
     }
+
+    // Current password + New password + Confirm password -> Update password
+    @Override
+    public void completeChangePassword(String email, CompleteResetPasswordRequest request) {
+        // Confirm new password matches confirm password
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new RuntimeException("New password and confirm password do not match");
+        }
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+
+        // Enforce that Step 2 OTP verification passed
+        if (!"OTP_VERIFIED".equals(user.getPendingPassword()) || user.getOtpExpiration() == null || user.getOtpExpiration().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("OTP verification expired or incomplete. Please request a new OTP.");
+        }
+
+        // Verify current password matches the database
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new RuntimeException("Current password is incorrect");
+        }
+
+        // Update password and wipe temporary security tokens
+        String encodedPassword = passwordEncoder.encode(request.getNewPassword());
+        user.setPassword(encodedPassword);
+        user.setConfirmPassword(encodedPassword);
+        user.setResetOtp(null);
+        user.setOtpExpiration(null);
+        user.setPendingPassword(null);
+        userRepository.save(user);
+    }
+
+    @Override
+    public UserProfileResponse getUserProfile(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
+        return UserProfileResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .role(user.getRole().name())
+                .build();
+    }
+
 }
