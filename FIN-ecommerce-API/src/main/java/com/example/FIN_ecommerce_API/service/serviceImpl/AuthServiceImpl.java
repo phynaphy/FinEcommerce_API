@@ -159,15 +159,14 @@ public class AuthServiceImpl implements AuthService {
 
     // Current password New password Confirm password Update password
     @Override
-    public void completeChangePassword(Long id, CompleteResetPasswordRequest request) {
+    public void completeChangePassword(String email, CompleteResetPasswordRequest request) {
         // Confirm new password matches confirm password
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
             throw new RuntimeException("New password and confirm password do not match");
         }
 
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
-
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
         // Enforce that Step 2 OTP verification passed
         if (!"OTP_VERIFIED".equals(user.getPendingPassword()) || user.getOtpExpiration() == null || user.getOtpExpiration().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("OTP verification expired or incomplete. Please request a new OTP.");
