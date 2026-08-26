@@ -1,5 +1,6 @@
 package com.example.FIN_ecommerce_API.security;
 
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,8 +12,10 @@ import java.util.Date;
 
 @Component
 public class JwtProvider {
+
     @Value("${jwt.secret}")
     private String secretKey;
+
     @Value("${jwt.expiration}")
     private long jwtExpiration;
 
@@ -36,5 +39,17 @@ public class JwtProvider {
                 .parseSignedClaims(token)
                 .getPayload()
                 .getSubject();
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parser()
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token);
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
     }
 }

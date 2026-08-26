@@ -1,7 +1,6 @@
 package com.example.FIN_ecommerce_API.controller;
 
 import com.example.FIN_ecommerce_API.dto.response.UserProfileResponse;
-import com.example.FIN_ecommerce_API.service.AuthService;
 import com.example.FIN_ecommerce_API.service.UserService;
 import com.example.FIN_ecommerce_API.utilities.Constant;
 import org.springframework.http.MediaType;
