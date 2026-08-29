@@ -1,8 +1,7 @@
 package com.example.FIN_ecommerce_API.service;
 
 
-import com.example.FIN_ecommerce_API.dto.request.LoginRequest;
-import com.example.FIN_ecommerce_API.dto.request.UpdateAdminRequest;
+import com.example.FIN_ecommerce_API.dto.request.*;
 import com.example.FIN_ecommerce_API.dto.response.AuthResponse;
 import com.example.FIN_ecommerce_API.dto.response.UserResponse;
 import org.springframework.data.domain.Page;
@@ -17,5 +16,8 @@ public interface AdminUserService {
     void deleteAdmin(Long id);
     List<UserResponse> getAllUsers();
     AuthResponse login(LoginRequest request);
+    UserResponse createUser(CreateUserRequest request);
+    UserResponse updateUserRole(Long userId, UpdateUserRoleRequest request);
+    UserResponse updateUser(Long id, UpdateUserRequest request);
 
 }

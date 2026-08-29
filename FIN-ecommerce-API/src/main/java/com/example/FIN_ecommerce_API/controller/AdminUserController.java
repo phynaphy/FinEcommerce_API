@@ -1,11 +1,11 @@
 package com.example.FIN_ecommerce_API.controller;
 
-import com.example.FIN_ecommerce_API.dto.request.LoginRequest;
-import com.example.FIN_ecommerce_API.dto.request.UpdateAdminRequest;
+import com.example.FIN_ecommerce_API.dto.request.*;
 import com.example.FIN_ecommerce_API.dto.response.AuthResponse;
 import com.example.FIN_ecommerce_API.dto.response.UserResponse;
 import com.example.FIN_ecommerce_API.service.AdminUserService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +16,8 @@ import java.util.Map;
 import static com.example.FIN_ecommerce_API.utilities.Constant.WEB_PATH;
 
 @RestController
-@RequestMapping(WEB_PATH + "/users")
+@RequestMapping(WEB_PATH + "/admin/users")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminUserController {
 
     private final AdminUserService adminUserService;
@@ -25,48 +26,71 @@ public class AdminUserController {
         this.adminUserService = adminUserService;
     }
 
-    // Login endpoint (Requires ADMIN credentials via Basic Auth / Service check)
+    // 1. Admin Login
     @PostMapping("/login")
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('ADMIN')")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        return ResponseEntity.ok(adminUserService.login(request));
+    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+        AuthResponse response = adminUserService.login(request);
+        return ResponseEntity.ok(response);
     }
 
-    // Get all registered users (ADMIN only)
-    @GetMapping("/list")
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('ADMIN')")
+    // 2. Create User
+    @PostMapping
+    public ResponseEntity<UserResponse> createUser(@RequestBody CreateUserRequest request) {
+        UserResponse createdUser = adminUserService.createUser(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+    }
+
+    // 3. Get All Users
+    @GetMapping
     public ResponseEntity<List<UserResponse>> getAllUsers() {
         return ResponseEntity.ok(adminUserService.getAllUsers());
     }
 
-    // Get all admin users (ADMIN only)
-    @GetMapping
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('ADMIN')")
+    // 4. Update User Details (FullName, Email, Role)
+    @PutMapping("/{id}")
+    public ResponseEntity<UserResponse> updateUser(
+            @PathVariable Long id,
+            @RequestBody UpdateUserRequest request) {
+        UserResponse updatedUser = adminUserService.updateUser(id, request);
+        return ResponseEntity.ok(updatedUser);
+    }
+
+    // 5. Update User Role Only
+    @PatchMapping("/{id}/role")
+    public ResponseEntity<UserResponse> updateUserRole(
+            @PathVariable Long id,
+            @RequestBody UpdateUserRoleRequest request) {
+        UserResponse updatedUser = adminUserService.updateUserRole(id, request);
+        return ResponseEntity.ok(updatedUser);
+    }
+
+    // --- Admin-Specific Endpoints ---
+
+    // 6. Get All Admins
+    @GetMapping("/admins")
     public ResponseEntity<List<UserResponse>> getAllAdmins() {
         return ResponseEntity.ok(adminUserService.getAllAdmins());
     }
 
-    // Get single admin by ID (ADMIN only)
-    @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('ADMIN')")
+    // 7. Get Admin By ID
+    @GetMapping("/admins/{id}")
     public ResponseEntity<UserResponse> getAdminById(@PathVariable Long id) {
         return ResponseEntity.ok(adminUserService.getAdminById(id));
     }
 
-    // Update admin profile details (ADMIN only)
-    @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('ADMIN')")
+    // 8. Update Admin Profile
+    @PutMapping("/admins/{id}")
     public ResponseEntity<UserResponse> updateAdmin(
             @PathVariable Long id,
-            @Valid @RequestBody UpdateAdminRequest request) {
-        return ResponseEntity.ok(adminUserService.updateAdmin(id, request));
+            @RequestBody UpdateAdminRequest request) {
+        UserResponse updatedAdmin = adminUserService.updateAdmin(id, request);
+        return ResponseEntity.ok(updatedAdmin);
     }
 
-    // Delete admin profile (ADMIN only)
+    // 9. Delete Admin / User
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('ADMIN')")
-    public ResponseEntity<Map<String, String>> deleteAdmin(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteAdmin(@PathVariable Long id) {
         adminUserService.deleteAdmin(id);
-        return ResponseEntity.ok(Map.of("message", "Admin account deleted successfully"));
+        return ResponseEntity.noContent().build();
     }
 }

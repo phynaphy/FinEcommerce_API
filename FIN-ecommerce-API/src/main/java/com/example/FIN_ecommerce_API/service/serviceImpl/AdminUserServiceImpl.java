@@ -1,7 +1,6 @@
 package com.example.FIN_ecommerce_API.service.serviceImpl;
 
-import com.example.FIN_ecommerce_API.dto.request.LoginRequest;
-import com.example.FIN_ecommerce_API.dto.request.UpdateAdminRequest;
+import com.example.FIN_ecommerce_API.dto.request.*;
 import com.example.FIN_ecommerce_API.dto.response.AuthResponse;
 import com.example.FIN_ecommerce_API.dto.response.UserResponse;
 import com.example.FIN_ecommerce_API.model.Role;
@@ -53,6 +52,67 @@ public class AdminUserServiceImpl implements AdminUserService {
                 .username(user.getUsername())
                 .role(user.getRole().name())
                 .build();
+    }
+
+    @Override
+    public UserResponse createUser(CreateUserRequest request) {
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new IllegalArgumentException("Passwords do not match");
+        }
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new IllegalArgumentException("Username is already taken");
+        }
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("Email is already in use");
+        }
+
+        User newUser = new User();
+        newUser.setFullName(request.getFullName());
+        newUser.setUsername(request.getUsername());
+        newUser.setEmail(request.getEmail());
+        newUser.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        // TEMPORARY FIX: Set confirmPassword on the entity if the column cannot be dropped yet
+        newUser.setConfirmPassword(passwordEncoder.encode(request.getConfirmPassword()));
+
+        newUser.setRole(request.getRole());
+
+        User savedUser = userRepository.save(newUser);
+        return mapToUserResponse(savedUser);
+    }
+
+    @Override
+    public UserResponse updateUser(Long id, UpdateUserRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + id));
+
+        if (request.getFullName() != null && !request.getFullName().isBlank()) {
+            user.setFullName(request.getFullName());
+        }
+
+        if (request.getEmail() != null && !request.getEmail().isBlank() && !request.getEmail().equals(user.getEmail())) {
+            if (userRepository.existsByEmail(request.getEmail())) {
+                throw new IllegalArgumentException("Email is already in use");
+            }
+            user.setEmail(request.getEmail());
+        }
+
+        if (request.getRole() != null) {
+            user.setRole(request.getRole());
+        }
+
+        User updatedUser = userRepository.save(user);
+        return mapToUserResponse(updatedUser);
+    }
+
+    @Override
+    public UserResponse updateUserRole(Long userId, UpdateUserRoleRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + userId));
+
+        user.setRole(request.getRole());
+        User updatedUser = userRepository.save(user);
+        return mapToUserResponse(updatedUser);
     }
 
     @Override

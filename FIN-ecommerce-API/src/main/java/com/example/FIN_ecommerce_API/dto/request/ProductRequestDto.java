@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 
@@ -23,7 +24,9 @@ public class ProductRequestDto {
     @Positive(message = "Price must be greater than zero")
     private BigDecimal price;
 
-    private String imageUrl;
+    private MultipartFile imageUrl;
+
+    private String description;
 
     @NotNull(message = "Category ID is required")
     private Long categoryId;
