@@ -117,12 +117,22 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private ProductResponseDto mapToResponseDto(Product product) {
+        Long categoryId = null;
+        String categoryName = null;
+
+        if (product.getCategory() != null) {
+            categoryId = product.getCategory().getId();
+            categoryName = product.getCategory().getName();
+        }
+
         return ProductResponseDto.builder()
                 .id(product.getId())
                 .name(product.getName())
                 .price(product.getPrice())
                 .imageUrl(product.getImageUrl())
-                .categoryName(product.getCategory() != null ? product.getCategory().getName() : null)
+                .description(product.getDescription())
+                .categoryId(categoryId)
+                .categoryName(categoryName)
                 .build();
     }
 }

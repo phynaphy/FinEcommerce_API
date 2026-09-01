@@ -127,6 +127,7 @@ public class ProductServiceAdminImpl implements ProductAdminService {
                 .price(product.getPrice())
                 .imageUrl(product.getImageUrl())
                 .description(product.getDescription())
+                .categoryId(product.getCategory() != null ? product.getCategory().getId() : null)
                 .categoryName(product.getCategory() != null ? product.getCategory().getName() : null)
                 .build();
     }

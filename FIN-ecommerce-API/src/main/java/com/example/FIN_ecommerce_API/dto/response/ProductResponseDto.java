@@ -1,5 +1,6 @@
 package com.example.FIN_ecommerce_API.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,5 +19,6 @@ public class ProductResponseDto {
     private String imageUrl;
     private String categoryName;
     private String description;
+    private Long categoryId;
     private Integer stock;
 }
