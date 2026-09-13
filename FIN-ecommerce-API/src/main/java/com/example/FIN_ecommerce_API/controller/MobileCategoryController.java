@@ -2,44 +2,50 @@ package com.example.FIN_ecommerce_API.controller;
 
 import com.example.FIN_ecommerce_API.dto.request.CategoryRequestDto;
 import com.example.FIN_ecommerce_API.dto.response.CategoryResponseDto;
+import com.example.FIN_ecommerce_API.dto.response.ProductResponseDto;
 import com.example.FIN_ecommerce_API.service.CategoryService;
-import com.example.FIN_ecommerce_API.utilities.Constant;
+import com.example.FIN_ecommerce_API.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping(Constant.WEB_PATH + "/categories")
-@PreAuthorize("hasRole('ADMIN')")
-public class CategoryController {
+@RequestMapping("/api/v1/categories")
+@RequiredArgsConstructor
+public class MobileCategoryController {
 
     private final CategoryService categoryService;
+    private final ProductService productService;
 
-    public CategoryController(CategoryService categoryService) {
-        this.categoryService = categoryService;
-    }
-
+    // 1. List all categories
     @GetMapping
     public ResponseEntity<List<CategoryResponseDto>> getAllCategories() {
         return ResponseEntity.ok(categoryService.getAllCategories());
     }
 
+    // 2. Get single category by ID
     @GetMapping("/{id}")
     public ResponseEntity<CategoryResponseDto> getCategoryById(@PathVariable Long id) {
         return ResponseEntity.ok(categoryService.getCategoryById(id));
     }
 
-    @PostMapping
-    public ResponseEntity<CategoryResponseDto> createCategory(@Valid @RequestBody CategoryRequestDto requestDto) {
-        CategoryResponseDto createdCategory = categoryService.createCategory(requestDto);
-        return new ResponseEntity<>(createdCategory, HttpStatus.CREATED);
+    // 3. Click category details -> List products in that category
+    @GetMapping("/{id}/products")
+    public ResponseEntity<List<ProductResponseDto>> getProductsByCategory(@PathVariable Long id) {
+        return ResponseEntity.ok(productService.getProductsByCategory(id));
     }
 
+    // 4. Create new category
+    @PostMapping
+    public ResponseEntity<CategoryResponseDto> createCategory(@Valid @RequestBody CategoryRequestDto requestDto) {
+        return new ResponseEntity<>(categoryService.createCategory(requestDto), HttpStatus.CREATED);
+    }
+
+    // 5. Update category
     @PutMapping("/{id}")
     public ResponseEntity<CategoryResponseDto> updateCategory(
             @PathVariable Long id,
@@ -47,6 +53,7 @@ public class CategoryController {
         return ResponseEntity.ok(categoryService.updateCategory(id, requestDto));
     }
 
+    // 6. Delete category
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
         categoryService.deleteCategory(id);
