@@ -2,6 +2,7 @@ package com.example.FIN_ecommerce_API.controller;
 import com.example.FIN_ecommerce_API.dto.request.ProductRequestDto;
 import com.example.FIN_ecommerce_API.dto.response.ProductResponseDto;
 import com.example.FIN_ecommerce_API.service.ProductService;
+import com.example.FIN_ecommerce_API.utilities.Constant;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -11,10 +12,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping(Constant.MAIN_PATH + "products")
 @RequiredArgsConstructor
 public class MobileProductController {
-
     private final ProductService productService;
 
     // 1. List all products

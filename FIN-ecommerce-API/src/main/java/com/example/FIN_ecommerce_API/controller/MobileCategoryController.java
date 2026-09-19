@@ -5,6 +5,7 @@ import com.example.FIN_ecommerce_API.dto.response.CategoryResponseDto;
 import com.example.FIN_ecommerce_API.dto.response.ProductResponseDto;
 import com.example.FIN_ecommerce_API.service.CategoryService;
 import com.example.FIN_ecommerce_API.service.ProductService;
+import com.example.FIN_ecommerce_API.utilities.Constant;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,10 +15,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/categories")
+@RequestMapping(Constant.MAIN_PATH+"/categories")
 @RequiredArgsConstructor
 public class MobileCategoryController {
-
     private final CategoryService categoryService;
     private final ProductService productService;
 
