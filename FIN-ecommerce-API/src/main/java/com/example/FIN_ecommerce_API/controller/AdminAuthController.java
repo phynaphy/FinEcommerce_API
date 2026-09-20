@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping(Constant.WEB_PATH + "/auth")
+@RequestMapping(Constant.WEB_PATH + "/admin/auth")
 public class AdminAuthController {
     private final AdminAuthService adminAuthService;
 

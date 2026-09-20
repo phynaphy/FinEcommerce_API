@@ -39,7 +39,7 @@
 //                .httpBasic(Customizer.withDefaults())
 //                .authorizeHttpRequests(auth -> auth
 //                        // 1. CORS Preflight
-////                        .requestMatchers("/api/v1/**").permitAll()
+//                        .requestMatchers("/api/v1/**").permitAll()
 //                        .requestMatchers("/api/v1/categories/**").permitAll()
 //                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 //
@@ -113,6 +113,7 @@ public class SecurityConfig {
 
                         // 2. Public Static Assets & Auth Endpoints (/api/v1/mobile/auth/**)
                         .requestMatchers("/uploads/**", "/error", Constant.MAIN_PATH + "/auth/**").permitAll()
+                        .requestMatchers(Constant.WEB_PATH + "/**").permitAll()
 
                         // 3. Public GET access for viewing categories & products without token
                         .requestMatchers(HttpMethod.GET, Constant.MAIN_PATH + "/categories/**").permitAll()
