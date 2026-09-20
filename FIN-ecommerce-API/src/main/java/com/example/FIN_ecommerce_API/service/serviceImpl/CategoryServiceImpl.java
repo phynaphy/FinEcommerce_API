@@ -81,6 +81,7 @@ public class CategoryServiceImpl implements CategoryService {
         return CategoryResponseDto.builder()
                 .id(category.getId())
                 .name(category.getName())
+                .imageUrl(category.getImageUrl())
                 .totalProducts(totalProducts)
                 .build();
     }
