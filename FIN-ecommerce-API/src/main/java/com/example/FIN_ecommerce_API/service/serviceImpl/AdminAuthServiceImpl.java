@@ -141,4 +141,20 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         user.setPendingPassword(null);
         userRepository.save(user);
     }
+
+    @Override
+    public void logout(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("Invalid Authorization header format");
+        }
+
+        String token = authHeader.substring(7);
+
+        if (!jwtProvider.validateToken(token)) {
+            throw new RuntimeException("Invalid or expired token");
+        }
+
+        // Invalidate the token server-side
+        jwtProvider.invalidateToken(token);
+    }
 }

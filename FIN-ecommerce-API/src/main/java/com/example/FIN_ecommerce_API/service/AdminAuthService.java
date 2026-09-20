@@ -9,4 +9,5 @@ public interface AdminAuthService {
     void forgotPassword(ForgotPasswordRequest request);
     AuthResponse verifyForgotPassword(VerifyOtpRequest request);
     void resetForgotPassword(ResetForgotPasswordRequest request, String username);
+    void logout(String token);
 }

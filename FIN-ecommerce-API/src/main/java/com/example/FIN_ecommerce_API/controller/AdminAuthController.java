@@ -59,4 +59,11 @@ public class AdminAuthController {
 
         return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
     }
+
+    @PostMapping("/logout")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, String>> logout(@RequestHeader("Authorization") String authHeader) {
+        adminAuthService.logout(authHeader);
+        return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
+    }
 }
