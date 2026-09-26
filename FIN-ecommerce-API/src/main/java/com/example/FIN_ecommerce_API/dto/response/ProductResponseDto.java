@@ -42,7 +42,7 @@ public class ProductResponseDto {
     private String name;
     private BigDecimal price;
     private BigDecimal originalPrice;
-    private Integer discountPercentage;
+    private Double discountPercentage;
     private Double rating;
     private Integer reviewCount;
     private Boolean isOfficialStore;

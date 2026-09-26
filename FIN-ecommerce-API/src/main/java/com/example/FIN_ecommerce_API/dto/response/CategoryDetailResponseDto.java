@@ -28,7 +28,7 @@ public class CategoryDetailResponseDto {
         private String name;
         private BigDecimal price;
         private BigDecimal originalPrice;
-        private Integer discountPercentage;
+        private Double discountPercentage;
         private Integer reviewCount;
         private Boolean isOfficialStore;
         private String mainImageUrl;

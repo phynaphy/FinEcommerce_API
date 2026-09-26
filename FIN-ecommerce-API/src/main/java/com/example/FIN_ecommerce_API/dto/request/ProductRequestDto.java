@@ -62,7 +62,7 @@ public class ProductRequestDto {
 
     @Min(value = 0, message = "Discount percentage cannot be negative")
     @Max(value = 100, message = "Discount percentage cannot exceed 100")
-    private Integer discountPercentage;
+    private Double discountPercentage;
 
     @DecimalMin(value = "0.0", message = "Rating cannot be negative")
     @Max(value = 5, message = "Rating cannot exceed 5.0")

@@ -67,7 +67,7 @@ public class Product {
     private BigDecimal originalPrice; // e.g., 1299.00
 
     @Column(name = "discount_percentage")
-    private Integer discountPercentage; // e.g., 8 for "SAVE 8%"
+    private Double discountPercentage; // e.g., 8 for "SAVE 8%"
 
     @Column(name = "rating")
     private Double rating; // e.g., 4.9
