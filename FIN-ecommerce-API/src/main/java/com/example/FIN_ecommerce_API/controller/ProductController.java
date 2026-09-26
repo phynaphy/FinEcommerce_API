@@ -8,8 +8,10 @@ import com.example.FIN_ecommerce_API.utilities.Constant;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -45,19 +47,16 @@ public class ProductController {
         );
     }
 
-    @PostMapping
-    public ResponseEntity<GlobalApiResponse<ProductResponseDto>> createProduct(
-            @Valid @RequestBody ProductRequestDto requestDto) {
-        ProductResponseDto createdProduct = productService.createProduct(requestDto);
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ProductResponseDto> createProduct(
+            @Valid @RequestPart("product") ProductRequestDto requestDto,
+            @RequestPart(value = "mainImage", required = false) MultipartFile mainImage,
+            @RequestPart(value = "galleryImages", required = false) List<MultipartFile> galleryImages) {
 
-        GlobalApiResponse<ProductResponseDto> response = GlobalApiResponse.<ProductResponseDto>builder()
-                .statusCode(HttpStatus.CREATED.value())
-                .status(HttpStatus.CREATED.getReasonPhrase())
-                .message("Product created successfully")
-                .data(createdProduct)
-                .build();
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return new ResponseEntity<>(
+                productService.createProduct(requestDto, mainImage, galleryImages),
+                HttpStatus.CREATED
+        );
     }
 
     @DeleteMapping("/{id}")
