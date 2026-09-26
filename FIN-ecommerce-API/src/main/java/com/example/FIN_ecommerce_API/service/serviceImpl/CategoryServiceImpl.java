@@ -1,9 +1,98 @@
-
+//
+//package com.example.FIN_ecommerce_API.service.serviceImpl;
+//
+//import com.example.FIN_ecommerce_API.dto.request.CategoryRequestDto;
+//import com.example.FIN_ecommerce_API.dto.response.CategoryResponseDto;
+//import com.example.FIN_ecommerce_API.model.Category;
+//import com.example.FIN_ecommerce_API.repository.CategoryRepository;
+//import com.example.FIN_ecommerce_API.repository.ProductRepository;
+//import com.example.FIN_ecommerce_API.service.CategoryService;
+//import jakarta.persistence.EntityNotFoundException;
+//import lombok.RequiredArgsConstructor;
+//import org.springframework.stereotype.Service;
+//import org.springframework.transaction.annotation.Transactional;
+//
+//import java.util.List;
+//
+//@Service
+//@RequiredArgsConstructor
+//public class CategoryServiceImpl implements CategoryService {
+//
+//    private final CategoryRepository categoryRepository;
+//    private final ProductRepository productRepository;
+//
+//    @Override
+//    @Transactional(readOnly = true)
+//    public List<CategoryResponseDto> getAllCategories() {
+//        return categoryRepository.findAll().stream()
+//                .map(this::mapToResponseDto)
+//                .toList();
+//    }
+//
+//    @Override
+//    @Transactional(readOnly = true)
+//    public CategoryResponseDto getCategoryById(Long id) {
+//        Category category = categoryRepository.findById(id)
+//                .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + id));
+//        return mapToResponseDto(category);
+//    }
+//
+//    @Override
+//    @Transactional
+//    public CategoryResponseDto createCategory(CategoryRequestDto requestDto) {
+//        if (categoryRepository.existsByName(requestDto.getName())) {
+//            throw new IllegalArgumentException("Category name already exists: " + requestDto.getName());
+//        }
+//
+//        Category category = Category.builder()
+//                .name(requestDto.getName())
+//                .build();
+//
+//        Category savedCategory = categoryRepository.save(category);
+//        return mapToResponseDto(savedCategory);
+//    }
+//
+//    @Override
+//    @Transactional
+//    public CategoryResponseDto updateCategory(Long id, CategoryRequestDto requestDto) {
+//        Category category = categoryRepository.findById(id)
+//                .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + id));
+//
+//        if (!category.getName().equalsIgnoreCase(requestDto.getName())
+//                && categoryRepository.existsByName(requestDto.getName())) {
+//            throw new IllegalArgumentException("Category name already exists: " + requestDto.getName());
+//        }
+//
+//        category.setName(requestDto.getName());
+//        Category updatedCategory = categoryRepository.save(category);
+//        return mapToResponseDto(updatedCategory);
+//    }
+//
+//    @Override
+//    @Transactional
+//    public void deleteCategory(Long id) {
+//        Category category = categoryRepository.findById(id)
+//                .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + id));
+//        categoryRepository.delete(category);
+//    }
+//
+//    private CategoryResponseDto mapToResponseDto(Category category) {
+//        int totalProducts = productRepository.countByCategoryId(category.getId());
+//        return CategoryResponseDto.builder()
+//                .id(category.getId())
+//                .name(category.getName())
+//                .imageUrl(category.getImageUrl())
+//                .totalProducts(totalProducts)
+//                .build();
+//    }
+//}
 package com.example.FIN_ecommerce_API.service.serviceImpl;
 
 import com.example.FIN_ecommerce_API.dto.request.CategoryRequestDto;
+import com.example.FIN_ecommerce_API.dto.response.CategoryDetailResponseDto;
 import com.example.FIN_ecommerce_API.dto.response.CategoryResponseDto;
 import com.example.FIN_ecommerce_API.model.Category;
+import com.example.FIN_ecommerce_API.model.Product;
 import com.example.FIN_ecommerce_API.repository.CategoryRepository;
 import com.example.FIN_ecommerce_API.repository.ProductRepository;
 import com.example.FIN_ecommerce_API.service.CategoryService;
@@ -35,6 +124,39 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + id));
         return mapToResponseDto(category);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CategoryDetailResponseDto getCategoryDetail(Long id) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + id));
+
+        List<Product> products = productRepository.findByCategoryId(id);
+
+        List<CategoryDetailResponseDto.ProductItemDto> productItemDtos = products.stream()
+                .map(this::mapToProductItemDto)
+                .toList();
+
+        return CategoryDetailResponseDto.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .imageUrl(category.getImageUrl())
+                .totalProducts(products.size())
+                .products(productItemDtos)
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CategoryDetailResponseDto.ProductItemDto> getProductsByCategory(Long categoryId) {
+        if (!categoryRepository.existsById(categoryId)) {
+            throw new EntityNotFoundException("Category not found with id: " + categoryId);
+        }
+        return productRepository.findByCategoryId(categoryId)
+                .stream()
+                .map(this::mapToProductItemDto)
+                .toList();
     }
 
     @Override
@@ -83,6 +205,19 @@ public class CategoryServiceImpl implements CategoryService {
                 .name(category.getName())
                 .imageUrl(category.getImageUrl())
                 .totalProducts(totalProducts)
+                .build();
+    }
+
+    private CategoryDetailResponseDto.ProductItemDto mapToProductItemDto(Product product) {
+        return CategoryDetailResponseDto.ProductItemDto.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .price(product.getPrice())
+                .originalPrice(product.getOriginalPrice())
+                .discountPercentage(product.getDiscountPercentage())
+                .reviewCount(product.getReviewCount() != null ? product.getReviewCount() : 0)
+                .isOfficialStore(Boolean.TRUE.equals(product.getIsOfficialStore()))
+                .mainImageUrl(product.getMainImageUrl())
                 .build();
     }
 }
