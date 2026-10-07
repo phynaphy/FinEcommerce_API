@@ -218,31 +218,16 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
-    public CartResponseDto updateCartItem(
-            Long cartItemId,
-            Integer quantity
-    ) {
-
+    public CartResponseDto updateCartItem(Long cartItemId, Integer quantity) {
         if (quantity == null || quantity < 1) {
-
             throw new IllegalArgumentException(
                     "Quantity must be at least 1"
             );
         }
 
-
         User user = getCurrentUser();
-
-
-        CartItem cartItem = cartItemRepository
-                .findById(cartItemId)
-                .orElseThrow(() ->
-                        new EntityNotFoundException(
-                                "Cart item not found with id: "
-                                        + cartItemId
-                        )
-                );
-
+        CartItem cartItem = cartItemRepository.findById(cartItemId)
+                .orElseThrow(() -> new EntityNotFoundException("Cart item not found with id: " + cartItemId));
 
         // Security check:
         // Cart item must belong to current user
@@ -250,36 +235,21 @@ public class CartServiceImpl implements CartService {
                 .getUser()
                 .getId()
                 .equals(user.getId())) {
-
             throw new IllegalArgumentException(
                     "You cannot update this cart item"
             );
         }
-
-
-        ProductVariant variant =
-                cartItem.getVariant();
-
-
+        ProductVariant variant = cartItem.getVariant();
         // Check stock
-        if (variant != null
-                && variant.getStockQuantity()
-                < quantity) {
-
+        if (variant != null && variant.getStockQuantity() < quantity) {
             throw new IllegalArgumentException(
                     "Not enough stock"
             );
         }
 
-
         cartItem.setQuantity(quantity);
-
         cartItemRepository.save(cartItem);
-
-
-        return mapToResponse(
-                cartItem.getCart()
-        );
+        return mapToResponse(cartItem.getCart());
     }
 
 
@@ -287,43 +257,49 @@ public class CartServiceImpl implements CartService {
     // REMOVE ITEM
     // =========================================================
 
+
     @Override
     @Transactional
-    public CartResponseDto removeFromCart(
-            Long cartItemId
-    ) {
-
+    public CartResponseDto removeFromCart(Long cartItemId) {
         User user = getCurrentUser();
-
-
         CartItem cartItem = cartItemRepository
                 .findById(cartItemId)
                 .orElseThrow(() ->
                         new EntityNotFoundException(
-                                "Cart item not found"
+                                "Cart item not found with id: " + cartItemId
                         )
                 );
-
-
         // Security check
         if (!cartItem.getCart()
                 .getUser()
                 .getId()
                 .equals(user.getId())) {
-
             throw new IllegalArgumentException(
                     "You cannot remove this cart item"
             );
         }
-
-
         Cart cart = cartItem.getCart();
-
+        cart.getItems().remove(cartItem);
         cartItemRepository.delete(cartItem);
-
-
         return mapToResponse(cart);
     }
+
+//    public CartResponseDto removeFromCart(Long cartItemId) {
+//        User user = getCurrentUser();
+//        CartItem cartItem = cartItemRepository
+//                .findById(cartItemId)
+//                .orElseThrow(() -> new EntityNotFoundException("Cart item not found"));
+//        // Security check
+//        if (!cartItem.getCart()
+//                .getUser()
+//                .getId()
+//                .equals(user.getId())) {
+//            throw new IllegalArgumentException("You cannot remove this cart item");
+//        }
+//        Cart cart = cartItem.getCart();
+//        cartItemRepository.delete(cartItem);
+//        return mapToResponse(cart);
+//    }
 
 
     // =========================================================
@@ -333,10 +309,7 @@ public class CartServiceImpl implements CartService {
     @Override
     @Transactional
     public void clearCart() {
-
         User user = getCurrentUser();
-
-
         Cart cart = cartRepository
                 .findByUser(user)
                 .orElseThrow(() ->
@@ -345,9 +318,7 @@ public class CartServiceImpl implements CartService {
                         )
                 );
 
-
         cart.getItems().clear();
-
         cartRepository.save(cart);
     }
 
@@ -355,7 +326,6 @@ public class CartServiceImpl implements CartService {
     // =========================================================
     // CREATE CART
     // =========================================================
-
     private Cart createCart(User user) {
 
         Cart cart = Cart.builder()
@@ -377,20 +347,14 @@ public class CartServiceImpl implements CartService {
                 SecurityContextHolder
                         .getContext()
                         .getAuthentication();
-
-
         if (authentication == null
                 || !authentication.isAuthenticated()) {
-
             throw new IllegalStateException(
                     "User is not authenticated"
             );
         }
 
-
         String email = authentication.getName();
-
-
         return userRepository
                 .findByUsername(email)
                 .orElseThrow(() ->
@@ -406,23 +370,14 @@ public class CartServiceImpl implements CartService {
     // MAP RESPONSE
     // =========================================================
 
-    private CartResponseDto mapToResponse(
-            Cart cart
-    ) {
-
-        List<CartResponseDto.CartItemResponseDto> items =
+    private CartResponseDto mapToResponse(Cart cart) { List<CartResponseDto.CartItemResponseDto> items =
                 cart.getItems()
                         .stream()
                         .map(this::mapCartItem)
                         .toList();
-
-
-        Integer totalItems = items.stream()
-                .mapToInt(
+        Integer totalItems = items.stream().mapToInt(
                         CartResponseDto.CartItemResponseDto
-                                ::getQuantity
-                )
-                .sum();
+                        ::getQuantity).sum();
 
 
         BigDecimal totalPrice = items.stream()

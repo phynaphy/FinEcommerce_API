@@ -13,39 +13,30 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(Constant.MAIN_PATH + "/cart")
 @RequiredArgsConstructor
 public class CartController {
-
     private final CartService cartService;
-
-
     // GET CART
     @GetMapping
     public ResponseEntity<CartResponseDto> getMyCart() {
-
         return ResponseEntity.ok(
                 cartService.getMyCart()
         );
     }
-
 
     // ADD TO CART
     @PostMapping("/add")
     public ResponseEntity<CartResponseDto> addToCart(
             @Valid @RequestBody CartItemRequestDto request
     ) {
-
         return ResponseEntity.ok(
                 cartService.addToCart(request)
         );
     }
 
-
     // UPDATE QUANTITY
     @PutMapping("/items/{cartItemId}")
     public ResponseEntity<CartResponseDto> updateCartItem(
             @PathVariable Long cartItemId,
-            @RequestParam Integer quantity
-    ) {
-
+            @RequestParam Integer quantity) {
         return ResponseEntity.ok(
                 cartService.updateCartItem(
                         cartItemId,
@@ -53,7 +44,6 @@ public class CartController {
                 )
         );
     }
-
 
     // REMOVE ITEM
     @DeleteMapping("/items/{cartItemId}")
@@ -65,7 +55,6 @@ public class CartController {
                 cartService.removeFromCart(cartItemId)
         );
     }
-
 
     // CLEAR CART
     @DeleteMapping("/clear")
