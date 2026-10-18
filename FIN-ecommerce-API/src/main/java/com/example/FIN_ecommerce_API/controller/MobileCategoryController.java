@@ -126,4 +126,11 @@ public class MobileCategoryController {
         categoryService.deleteCategory(id);
         return ResponseEntity.noContent().build();
     }
+
+
+
+    @GetMapping("/recommended-with-products")
+    public ResponseEntity<List<CategoryDetailResponseDto>> getRecommendedCategoriesWithProducts() {
+        return ResponseEntity.ok(categoryService.getRecommendedCategoriesWithProducts());
+    }
 }

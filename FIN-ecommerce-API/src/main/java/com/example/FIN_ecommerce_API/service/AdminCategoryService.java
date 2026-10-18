@@ -12,4 +12,8 @@ public interface AdminCategoryService {
     CategoryResponseDto createCategory(CategoryRequestDto requestDto);
     CategoryResponseDto updateCategory(Long id, CategoryRequestDto requestDto);
     void deleteCategory(Long id);
+
+    List<CategoryResponseDto> getRecommendedCategories();
+    CategoryResponseDto updateCategoryRecommendation(Long id, boolean isRecommended);
+    void removeCategoryRecommendation(Long id);
 }

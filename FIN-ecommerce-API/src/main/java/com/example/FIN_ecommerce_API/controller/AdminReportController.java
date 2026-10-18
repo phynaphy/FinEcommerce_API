@@ -64,4 +64,42 @@ public class AdminReportController {
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(reportService.exportProductsPdf());
     }
+
+//    ======== add more code ======
+
+    @GetMapping("/users/pdf")
+    public ResponseEntity<byte[]> exportUsersPdf() {
+        byte[] pdf = reportService.exportUsersPdf();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=users_report.pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
+    }
+
+    @GetMapping("/categories/pdf")
+    public ResponseEntity<byte[]> exportCategoriesPdf() {
+        byte[] pdf = reportService.exportCategoriesPdf();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=categories_report.pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
+    }
+
+    @GetMapping("/variants/pdf")
+    public ResponseEntity<byte[]> exportVariantsPdf() {
+        byte[] pdf = reportService.exportVariantsPdf();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=variants_report.pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
+    }
+
+    @GetMapping("/cart-items/pdf")
+    public ResponseEntity<byte[]> exportCartItemsPdf() {
+        byte[] pdf = reportService.exportCartItemsPdf();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=cart_items_report.pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
+    }
 }

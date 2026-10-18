@@ -14,5 +14,10 @@ public class CategoryRequestDto {
     @NotBlank(message = "Category name is required")
     private String name;
 
+    private String code;
+
     private MultipartFile imageUrl;
+
+    private boolean isRecommended;
+    private Integer recommendationOrder;
 }

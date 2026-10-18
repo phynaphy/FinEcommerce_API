@@ -21,6 +21,15 @@ public class Category {
     @Column(nullable = false, unique = true)
     private String name;
 
+    @Column(nullable = false, unique = true)
+    private String  code;
+
     @Column(name = "image_url")
     private String imageUrl;
+
+    @Column(name = "is_recommended", nullable = false)
+    private boolean isRecommended = false;
+
+    @Column(name = "recommendation_order")
+    private Integer recommendationOrder;
 }

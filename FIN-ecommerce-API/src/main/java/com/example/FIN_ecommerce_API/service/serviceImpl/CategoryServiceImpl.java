@@ -220,4 +220,28 @@ public class CategoryServiceImpl implements CategoryService {
                 .mainImageUrl(product.getMainImageUrl())
                 .build();
     }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CategoryDetailResponseDto> getRecommendedCategoriesWithProducts() {
+        List<Category> recommendedCategories = categoryRepository.findByIsRecommendedTrue();
+
+        return recommendedCategories.stream().map(category -> {
+            List<Product> products = productRepository.findByCategoryId(category.getId());
+
+            List<CategoryDetailResponseDto.ProductItemDto> productItemDtos = products.stream()
+                    .map(this::mapToProductItemDto)
+                    .toList();
+
+            return CategoryDetailResponseDto.builder()
+                    .id(category.getId())
+                    .name(category.getName())
+                    .imageUrl(category.getImageUrl())
+                    .isRecommended(category.isRecommended())
+                    .totalProducts(products.size())
+                    .products(productItemDtos)
+                    .build();
+        }).toList();
+    }
 }

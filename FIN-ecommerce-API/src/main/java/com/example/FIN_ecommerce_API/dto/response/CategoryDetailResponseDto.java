@@ -17,6 +17,7 @@ public class CategoryDetailResponseDto {
     private String name;
     private String imageUrl;
     private Integer totalProducts;
+    private Boolean isRecommended;
     private List<ProductItemDto> products;
 
     @Data

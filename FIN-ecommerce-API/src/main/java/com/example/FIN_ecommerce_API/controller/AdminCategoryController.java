@@ -52,4 +52,27 @@ public class AdminCategoryController {
         categoryService.deleteCategory(id);
         return ResponseEntity.noContent().build();
     }
+
+//    recommendation for you
+
+    // 1. Get all recommended categories
+    @GetMapping("/recommended")
+    public ResponseEntity<List<CategoryResponseDto>> getRecommendedCategories() {
+        return ResponseEntity.ok(categoryService.getRecommendedCategories());
+    }
+
+    // 2. Add or Edit recommendation settings for a category
+    @PutMapping("/{id}/recommendation")
+    public ResponseEntity<CategoryResponseDto> updateCategoryRecommendation(
+            @PathVariable Long id,
+            @RequestParam("isRecommended") boolean isRecommended) { // <-- Explicit binding
+        return ResponseEntity.ok(categoryService.updateCategoryRecommendation(id, isRecommended));
+    }
+
+    // 3. Delete/Remove recommendation status from a category
+    @DeleteMapping("/{id}/recommendation")
+    public ResponseEntity<Void> removeCategoryRecommendation(@PathVariable Long id) {
+        categoryService.removeCategoryRecommendation(id);
+        return ResponseEntity.noContent().build();
+    }
 }

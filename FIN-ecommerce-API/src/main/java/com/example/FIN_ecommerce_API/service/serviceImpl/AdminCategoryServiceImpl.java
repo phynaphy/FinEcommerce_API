@@ -16,7 +16,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class AdminCategoryServiceImpl implements AdminCategoryService {
-
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
     private final FileStorageService fileStorageService;
@@ -52,7 +51,9 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
 
         Category category = Category.builder()
                 .name(requestDto.getName())
+                .code(requestDto.getCode())
                 .imageUrl(storedImageUrl)
+                .isRecommended(requestDto.isRecommended()) // ✅ Fixed: Map recommendation status on create
                 .build();
 
         Category savedCategory = categoryRepository.save(category);
@@ -70,6 +71,10 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
             throw new IllegalArgumentException("Category name already exists: " + requestDto.getName());
         }
 
+        if (requestDto.getCode() != null && !requestDto.getCode().isEmpty()) {
+            category.setCode(requestDto.getCode());
+        }
+
         // 2. Delete old image and upload new image file
         if (requestDto.getImageUrl() != null && !requestDto.getImageUrl().isEmpty()) {
             if (category.getImageUrl() != null) {
@@ -80,6 +85,8 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
         }
 
         category.setName(requestDto.getName());
+        category.setRecommended(requestDto.isRecommended()); // ✅ Fixed: Map recommendation status on update
+
         Category updatedCategory = categoryRepository.save(category);
         return mapToResponseDto(updatedCategory);
     }
@@ -89,11 +96,9 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
     public void deleteCategory(Long id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + id));
-
         if (category.getImageUrl() != null) {
             fileStorageService.deleteFile(category.getImageUrl());
         }
-
         categoryRepository.delete(category);
     }
 
@@ -102,9 +107,44 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
 
         return CategoryResponseDto.builder()
                 .id(category.getId())
+                .code(category.getCode())
                 .name(category.getName())
                 .imageUrl(category.getImageUrl())
                 .totalProducts(totalProducts)
+                .isRecommended(category.isRecommended())
                 .build();
+    }
+
+    //    recommendation for you
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CategoryResponseDto> getRecommendedCategories() {
+        return categoryRepository.findByIsRecommendedTrueOrderByRecommendationOrderAsc().stream()
+                .map(this::mapToResponseDto)
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public CategoryResponseDto updateCategoryRecommendation(Long id, boolean isRecommended) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + id));
+
+        category.setRecommended(isRecommended);
+
+        Category savedCategory = categoryRepository.save(category);
+        return mapToResponseDto(savedCategory);
+    }
+
+    @Override
+    @Transactional
+    public void removeCategoryRecommendation(Long id) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + id));
+
+        category.setRecommended(false);
+        category.setRecommendationOrder(null);
+        categoryRepository.save(category);
     }
 }
