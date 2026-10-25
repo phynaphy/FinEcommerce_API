@@ -38,6 +38,7 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+
     @PutMapping(value = "/{username}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserProfileResponse> updateProfileWithFile(
             @PathVariable String username,
