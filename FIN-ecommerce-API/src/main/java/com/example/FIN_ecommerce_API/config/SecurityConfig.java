@@ -115,6 +115,8 @@ public class SecurityConfig {
                         .requestMatchers("/uploads/**", "/error", Constant.MAIN_PATH + "/auth/**").permitAll()
                         .requestMatchers(Constant.WEB_PATH + "/**").permitAll()
 
+                        .requestMatchers("/api/acleda/session").permitAll()
+
                         // 3. Public GET access for viewing categories & products without token
                         .requestMatchers(HttpMethod.GET, Constant.MAIN_PATH + "/categories/**").permitAll()
                         .requestMatchers(HttpMethod.GET, Constant.MAIN_PATH + "/products/**").permitAll()
