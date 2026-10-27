@@ -28,6 +28,9 @@ public class User {
     private String fullName;
 
     @Column(nullable = false)
+    private String phoneNumber;
+
+    @Column(nullable = false)
     private String confirmPassword;
 
     @Enumerated(EnumType.STRING)

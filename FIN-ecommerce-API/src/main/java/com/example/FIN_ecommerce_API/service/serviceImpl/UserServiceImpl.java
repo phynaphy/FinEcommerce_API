@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -39,25 +40,20 @@ public class UserServiceImpl implements UserService {
         }
 
         try {
-            // 1. Ensure target directory exists
             Path uploadPath = Paths.get(UPLOAD_DIR);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
 
-            // 2. Generate a unique filename
             String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
             Path filePath = uploadPath.resolve(fileName);
 
-            // 3. Save file to disk
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-            // 4. Update the user entity and save to Database
             String fileUrl = "/" + UPLOAD_DIR + fileName;
             user.setProfilePictureUrl(fileUrl);
-            userRepository.save(user); // Persists to SQL DB
+            userRepository.save(user);
 
-            // 5. Return response mapped from database entity
             return mapToUserProfileResponse(user);
 
         } catch (IOException e) {
@@ -71,7 +67,8 @@ public class UserServiceImpl implements UserService {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .fullName(user.getFullName())
-                .role(user.getRole().name())
+                .phoneNumber(user.getPhoneNumber())
+                .role(user.getRole() != null ? user.getRole().name() : null)
                 .profilePictureUrl(user.getProfilePictureUrl())
                 .build();
     }
@@ -82,7 +79,6 @@ public class UserServiceImpl implements UserService {
             UpdateUserRequest request,
             MultipartFile file) {
 
-        // 1. Validate request
         if (request == null) {
             throw new IllegalArgumentException("Update request cannot be empty.");
         }
@@ -95,59 +91,47 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Email is required.");
         }
 
-        // 2. Find existing user
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() ->
                         new RuntimeException("User not found with username: " + username));
 
-        // 3. Check duplicate username
         if (!user.getUsername().equals(request.getUsername())
                 && userRepository.existsByUsername(request.getUsername())) {
-
             throw new IllegalArgumentException(
                     "Username is already taken: " + request.getUsername());
         }
 
-        // 4. Check duplicate email
         if (!user.getEmail().equalsIgnoreCase(request.getEmail())
                 && userRepository.existsByEmail(request.getEmail())) {
-
             throw new IllegalArgumentException(
                     "Email is already in use: " + request.getEmail());
         }
 
-        // 5. Upload profile picture if provided
         if (file != null && !file.isEmpty()) {
-
-            // Limit upload size to 5 MB
+            // Fixed file size check (5 MB)
             if (file.getSize() > 5 * 1024 * 1024) {
                 throw new IllegalArgumentException(
                         "Profile picture must not exceed 5 MB.");
             }
 
-            // Allow only common image types
             String contentType = file.getContentType();
 
             if (contentType == null ||
                     !(contentType.equalsIgnoreCase("image/jpeg")
                             || contentType.equalsIgnoreCase("image/png")
                             || contentType.equalsIgnoreCase("image/webp"))) {
-
                 throw new IllegalArgumentException(
                         "Only JPEG, PNG, and WEBP images are allowed.");
             }
 
             try {
-                // Create upload directory
                 Path uploadPath = Paths.get(UPLOAD_DIR)
                         .toAbsolutePath()
                         .normalize();
 
                 Files.createDirectories(uploadPath);
 
-                // Generate a safe, unique filename
                 String extension;
-
                 if ("image/jpeg".equalsIgnoreCase(contentType)) {
                     extension = ".jpg";
                 } else if ("image/png".equalsIgnoreCase(contentType)) {
@@ -156,20 +140,16 @@ public class UserServiceImpl implements UserService {
                     extension = ".webp";
                 }
 
-                String fileName = java.util.UUID.randomUUID() + extension;
-
+                String fileName = UUID.randomUUID() + extension;
                 Path filePath = uploadPath.resolve(fileName).normalize();
 
-                // Ensure destination remains inside the upload directory
                 if (!filePath.startsWith(uploadPath)) {
                     throw new IllegalArgumentException("Invalid file path.");
                 }
 
-                // Save image
-                Files.copy(file.getInputStream(), filePath);
+                Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-                // Save relative URL in database
-                String fileUrl = "/uploads/profiles/" + fileName;
+                String fileUrl = "/" + UPLOAD_DIR + fileName;
                 user.setProfilePictureUrl(fileUrl);
 
             } catch (IOException e) {
@@ -178,20 +158,12 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        // 6. Update user information
         user.setUsername(request.getUsername().trim());
         user.setEmail(request.getEmail().trim());
         user.setFullName(request.getFullName());
+        user.setPhoneNumber(request.getPhoneNumber());
 
-        // IMPORTANT:
-        // Only update the role if your authorization rules permit it.
-        // Do not allow an ordinary user to promote themselves to ADMIN.
-        user.setRole(request.getRole());
-
-        // 7. Save updated user
         User updatedUser = userRepository.save(user);
-
-        // 8. Return updated profile
         return mapToUserProfileResponse(updatedUser);
     }
 }
