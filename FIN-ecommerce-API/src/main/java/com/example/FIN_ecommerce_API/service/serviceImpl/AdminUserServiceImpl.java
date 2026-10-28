@@ -70,6 +70,7 @@ public class AdminUserServiceImpl implements AdminUserService {
         newUser.setFullName(request.getFullName());
         newUser.setUsername(request.getUsername());
         newUser.setEmail(request.getEmail());
+        newUser.setPhoneNumber("");
         newUser.setPassword(passwordEncoder.encode(request.getPassword()));
 
         // TEMPORARY FIX: Set confirmPassword on the entity if the column cannot be dropped yet
